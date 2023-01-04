@@ -21,8 +21,17 @@ struct Apple
 	int score;			//점수
 };
 
+enum Progress {
+	START,
+	ONGOING,
+	END
+};
+
 int main(void)
 {
+	enum Progress progress;
+	progress = ONGOING;
+
 	/* window*/
 	RenderWindow window(VideoMode(W_WIDTH, W_HEIGHT), "AppleGame");
 	window.setFramerateLimit(60);
@@ -110,99 +119,111 @@ int main(void)
 	/* 프로그램 실행 중 */
 	while (window.isOpen())
 	{
-		/* mouse update */
-		mouse_pos = Mouse::getPosition(window);
-
-		/* time update */
-		spent_time = clock() - start_time;
-
-		/* event */
-		Event event;
-		while (window.pollEvent(event))
+		switch (progress) {
+		case 0:
+			break;
+		//게임 진행 중
+		case 1:
 		{
-			switch (event.type)
+			/* mouse update */
+			mouse_pos = Mouse::getPosition(window);
+
+			/* time update */
+			spent_time = clock() - start_time;
+
+			/* event */
+			Event event;
+			while (window.pollEvent(event))
 			{
-				//종료
-			case Event::Closed:
-				window.close();
-				//마우스 좌클릭 
-			case Event::MouseButtonPressed:
-				if (event.mouseButton.button == Mouse::Left)
+				switch (event.type)
 				{
-					for (int i = 0; i < A_AMOUNT; i++)
+					//종료
+				case Event::Closed:
+					window.close();
+					//마우스 좌클릭 
+				case Event::MouseButtonPressed:
+					if (event.mouseButton.button == Mouse::Left)
 					{
-						//사과를 클릭했다면
-						if (apples[i].sprite.getGlobalBounds().contains(mouse_pos.x, mouse_pos.y))
-						{	
-							apples[i].sprite.setFillColor(Color::Red);
-							apples[i].is_clicked = 1;
-							judge += apples[i].num;
-							++click_cnt;
-							click_sound.play();
+						for (int i = 0; i < A_AMOUNT; i++)
+						{
+							//사과를 클릭했다면
+							if (apples[i].sprite.getGlobalBounds().contains(mouse_pos.x, mouse_pos.y))
+							{
+								apples[i].sprite.setFillColor(Color::Red);
+								apples[i].is_clicked = 1;
+								judge += apples[i].num;
+								++click_cnt;
+								click_sound.play();
+							}
 						}
 					}
+				default:
+					break;
 				}
-			default:
-				break;
 			}
-		}
 
-		/* apple update */
-		//여러 개의 사과가 클릭 된 상태 
-		if (judge == 10) 
-		{
-			for (int i = 0; i < A_AMOUNT; i++)
+			/* apple update */
+			//여러 개의 사과가 클릭 된 상태 
+			if (judge == 10)
 			{
-				if (apples[i].is_clicked)
+				for (int i = 0; i < A_AMOUNT; i++)
 				{
-					apples[i].is_cleared = 1;
-					apples[i].is_clicked = 0;
+					if (apples[i].is_clicked)
+					{
+						apples[i].is_cleared = 1;
+						apples[i].is_clicked = 0;
+					}
+					score += apples[i].score * click_cnt;
 				}
-				score += apples[i].score * click_cnt;
+				judge = 0;
+				click_cnt = 0;
 			}
-			judge = 0;
-			click_cnt = 0; 
-		}
-		else if (judge > 10) {
+			else if (judge > 10) {
+				for (int i = 0; i < A_AMOUNT; i++)
+				{
+					apples[i].is_clicked = 0;
+					apples[i].sprite.setFillColor(Color::White);
+				}
+				judge = 0;
+				click_cnt = 0;
+			}
+
+			/* gameover */
+			if (TIME_LIMIT - spent_time / 1000 <= 0)
+			{
+				is_gameover = 1;
+			}
+
+			/* info update */
+			sprintf_s(info, "TIME : %2d\nSCORE : %d", TIME_LIMIT - spent_time / 1000, score);
+			text.setString(info);
+
+			/* draw */
+			window.clear(Color::White);
+			window.draw(background_stripe);
+
 			for (int i = 0; i < A_AMOUNT; i++)
 			{
-				apples[i].is_clicked = 0;
-				apples[i].sprite.setFillColor(Color::White);
+				if (apples[i].is_cleared == 0)
+					window.draw(apples[i].sprite);
 			}
-			judge = 0;
-			click_cnt = 0;
-		}
 
-		/* gameover */
-		if (TIME_LIMIT - spent_time / 1000 <= 0)
-		{
-			is_gameover = 1;
+			if (is_gameover)
+			{
+				window.draw(gameover_stripe);
+				sprintf_s(info, "SCORE : %d", score);
+				text.setString(info);
+				text.setPosition(400, 600);
+
+			}
+			window.draw(text);
+			window.display();
+		}
+			break;
+		case 2:
+			break;
 		}
 		
-		/* info update */
-		sprintf_s(info, "TIME : %2d\nSCORE : %d", TIME_LIMIT - spent_time / 1000, score);
-		text.setString(info);
-
-		/* draw */
-		window.clear(Color::White);
-		window.draw(background_stripe);
-		
-		for (int i = 0; i < A_AMOUNT; i++)
-		{
-			if(apples[i].is_cleared == 0)
-				window.draw(apples[i].sprite);
-		}
-
-		if (is_gameover)
-		{
-			window.draw(gameover_stripe);
-			sprintf_s(info, "SCORE : %d", score);
-			text.setString(info);
-			text.setPosition(400, 600);
-			
-		}
-		window.draw(text);
-		window.display();
 	}
 
 	return 0;
