@@ -7,10 +7,10 @@
 using namespace sf;
 
 const int W_WIDTH = 1000, W_HEIGHT = 1000;	//윈도우의 크기
-const int A_WIDTH = 25, A_HEIGHT = 25;		//사과의 크기
-const int A_AMOUNT = 49;					//사과의 개수 
+const int A_WIDTH = 90, A_HEIGHT = 90;		//사과의 크기
+const int A_AMOUNT = 81;					//사과의 개수 
 
-struct Apples
+struct Apple
 {
 	RectangleShape sprite;
 	int num;			//사과 안에 써있는 숫자
@@ -27,7 +27,10 @@ int main(void)
 	/* mouse */
 	Vector2i mouse_pos;
 
+	srand(time(0));
+
 	/* apple */
+	//texture 지정
 	Texture apple_texture[9];
 	char file_name[50];
 	for (int i = 0; i < 9; i++)
@@ -36,6 +39,23 @@ int main(void)
 		apple_texture[i].loadFromFile(file_name);
 
 	}
+	
+	struct Apple apples[A_AMOUNT];
+	int enter = 90;
+	for (int i = 0; i < A_AMOUNT; i++) 
+	{
+		apples[i].idx = 0;
+		apples[i].is_clicked = 0;
+		apples[i].num = rand() % 9 + 1;
+
+		//sprite
+		apples[i].sprite.setTexture(&apple_texture[apples[i].num - 1]);
+		apples[i].sprite.setSize(Vector2f(A_WIDTH, A_HEIGHT));
+		if (i % 9 == 0) //10번째 사과에서 줄내림
+			enter += 90;
+		apples[i].sprite.setPosition(70 + (i % 9) * A_WIDTH, enter);
+	}
+
 	/* 프로그램 실행 중 */
 	while (window.isOpen())
 	{
@@ -64,6 +84,10 @@ int main(void)
 
 		window.clear(Color::White);
 
+		for (int i = 0; i < A_AMOUNT; i++)
+		{
+			window.draw(apples[i].sprite);
+		}
 		window.display();
 	}
 
