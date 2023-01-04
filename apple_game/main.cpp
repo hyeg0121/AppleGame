@@ -57,9 +57,17 @@ int main(void)
 	RectangleShape gameover_stripe;
 	Texture gameover_texture;
 	gameover_texture.loadFromFile("./resources/images/gameover.png");
+	gameover_stripe.setPosition(150, 150);
 	gameover_stripe.setSize(Vector2f(700, 700));
-	gameover_stripe.setPosition(100, 50);
 	gameover_stripe.setTexture(&gameover_texture);
+
+	/* background */
+	RectangleShape background_stripe;
+	Texture background_texture;
+	background_texture.loadFromFile("./resources/images/background.png");
+	background_stripe.setPosition(0, 0);
+	background_stripe.setSize(Vector2f(W_WIDTH, W_HEIGHT));
+	background_stripe.setTexture(&background_texture);
 
 	/* apple */
 	//texture 지정
@@ -87,7 +95,7 @@ int main(void)
 		apples[i].sprite.setSize(Vector2f(A_WIDTH, A_HEIGHT));
 		if (i % 9 == 0) //10번째 사과에서 줄내림
 			enter += 90;
-		apples[i].sprite.setPosition(70 + (i % 9) * A_WIDTH, enter);
+		apples[i].sprite.setPosition(90 + (i % 9) * A_WIDTH, enter);
 	}
 
 	start_time = clock();
@@ -167,10 +175,10 @@ int main(void)
 		sprintf_s(info, "TIME : %2d\nSCORE : %d", TIME_LIMIT - spent_time / 1000, score);
 		text.setString(info);
 
+		/* draw */
 		window.clear(Color::White);
-
+		window.draw(background_stripe);
 		
-
 		for (int i = 0; i < A_AMOUNT; i++)
 		{
 			if(apples[i].is_cleared == 0)
@@ -182,7 +190,7 @@ int main(void)
 			window.draw(gameover_stripe);
 			sprintf_s(info, "SCORE : %d", score);
 			text.setString(info);
-			text.setPosition(400, 500);
+			text.setPosition(400, 600);
 			
 		}
 		window.draw(text);
