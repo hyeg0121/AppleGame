@@ -6,7 +6,16 @@
 
 using namespace sf;
 
-const int W_WIDTH = 1000, W_HEIGHT = 1000;
+const int W_WIDTH = 1000, W_HEIGHT = 1000;	//윈도우의 크기
+const int A_WIDTH = 30, A_HEIGHT = 30;		//사과의 크기
+const int A_AMOUNT = 49;					//사과의 개수 
+
+struct Apples
+{
+	int num;			//사과 안에 써있는 숫자
+	int is_clicked;		//클릭되어져 있는지
+	int idx;			//사과의 인덱스
+};
 
 int main(void)
 {
