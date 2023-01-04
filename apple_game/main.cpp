@@ -34,7 +34,7 @@ int main(void)
 	srand(time(0));
 	long start_time;
 	long spent_time;
-	int is_gameover;	//게임오버 상태
+	int is_gameover = 0;	//게임오버 상태
 	int score = 0;		//게임 스코어
 	int click_cnt = 0;		//콤보 효과를 주기 위한 클릭 횟수
 	int judge = 0;			//숫자가 10이 되는지 판단하는 변수
@@ -52,6 +52,14 @@ int main(void)
 	text.setOutlineColor(Color::Black);
 	text.setFont(font);
 	char info[100];
+
+	/* gameover */
+	RectangleShape gameover_stripe;
+	Texture gameover_texture;
+	gameover_texture.loadFromFile("./resources/images/gameover.png");
+	gameover_stripe.setSize(Vector2f(700, 700));
+	gameover_stripe.setPosition(100, 50);
+	gameover_stripe.setTexture(&gameover_texture);
 
 	/* apple */
 	//texture 지정
@@ -129,8 +137,12 @@ int main(void)
 		{
 			for (int i = 0; i < A_AMOUNT; i++)
 			{
-				apples[i].is_cleared = 1;
-				score += 20;
+				if (apples[i].is_clicked)
+				{
+					apples[i].is_cleared = 1;
+					apples[i].is_clicked = 0;
+				}
+				score += apples[i].score * click_cnt;
 			}
 			judge = 0;
 			click_cnt = 0; 
@@ -144,7 +156,12 @@ int main(void)
 			judge = 0;
 			click_cnt = 0;
 		}
-		
+
+		/* gameover */
+		if (TIME_LIMIT - spent_time / 1000 <= 0)
+		{
+			is_gameover = 1;
+		}
 		
 		/* info update */
 		sprintf_s(info, "TIME : %2d\nSCORE : %d", TIME_LIMIT - spent_time / 1000, score);
@@ -152,12 +169,23 @@ int main(void)
 
 		window.clear(Color::White);
 
-		window.draw(text);
+		
 
 		for (int i = 0; i < A_AMOUNT; i++)
 		{
+			if(apples[i].is_cleared == 0)
 				window.draw(apples[i].sprite);
 		}
+
+		if (is_gameover)
+		{
+			window.draw(gameover_stripe);
+			sprintf_s(info, "SCORE : %d", score);
+			text.setString(info);
+			text.setPosition(400, 500);
+			
+		}
+		window.draw(text);
 		window.display();
 	}
 
