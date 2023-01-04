@@ -48,10 +48,17 @@ int main(void)
 	text.setCharacterSize(30);
 	text.setPosition(100, 20);
 	text.setFillColor(Color::White);
-	text.setOutlineThickness(1);
+	text.setOutlineThickness(3);
 	text.setOutlineColor(Color::Black);
 	text.setFont(font);
 	char info[100];
+
+	/* Sound */
+	SoundBuffer click_sb;
+	click_sb.loadFromFile("./resources/sounds/click.ogg");
+	Sound click_sound;
+	click_sound.setBuffer(click_sb);
+	click_sound.setVolume(70);
 
 	/* gameover */
 	RectangleShape gameover_stripe;
@@ -97,7 +104,7 @@ int main(void)
 			enter += 90;
 		apples[i].sprite.setPosition(90 + (i % 9) * A_WIDTH, enter);
 	}
-
+	
 	start_time = clock();
 
 	/* 프로그램 실행 중 */
@@ -126,11 +133,12 @@ int main(void)
 					{
 						//사과를 클릭했다면
 						if (apples[i].sprite.getGlobalBounds().contains(mouse_pos.x, mouse_pos.y))
-						{
+						{	
 							apples[i].sprite.setFillColor(Color::Red);
 							apples[i].is_clicked = 1;
 							judge += apples[i].num;
 							++click_cnt;
+							click_sound.play();
 						}
 					}
 				}
