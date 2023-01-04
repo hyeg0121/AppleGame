@@ -16,6 +16,7 @@ struct Apple
 	RectangleShape sprite;
 	int num;			//사과 안에 써있는 숫자
 	int is_clicked;		//클릭되어져 있는지
+	int is_cleared;		//이미 없어진 사과인지
 	int idx;			//사과의 인덱스
 	int score;			//점수
 };
@@ -33,18 +34,22 @@ int main(void)
 	srand(time(0));
 	long start_time;
 	long spent_time;
-	int is_gameover; //게임오버 상태
-	int score = 0;		 //게임 스코어
+	int is_gameover;	//게임오버 상태
+	int score = 0;		//게임 스코어
+	int click_cnt = 0;		//콤보 효과를 주기 위한 클릭 횟수
+	int judge = 0;			//숫자가 10이 되는지 판단하는 변수
 
 	/* Font */
 	Font font;
-	font.loadFromFile("c:/Windows/Fonts/arial.ttf");
+	font.loadFromFile("c:/Windows/Fonts/ENCOBK.ttf");
 
 	/* Text */
 	Text text;
 	text.setCharacterSize(30);
 	text.setPosition(100, 20);
-	text.setFillColor(Color::Red);
+	text.setFillColor(Color::White);
+	text.setOutlineThickness(1);
+	text.setOutlineColor(Color::Black);
 	text.setFont(font);
 	char info[100];
 
@@ -65,8 +70,9 @@ int main(void)
 	{
 		apples[i].idx = 0;
 		apples[i].is_clicked = 0;
+		apples[i].is_cleared = 0;
 		apples[i].num = rand() % 9 + 1;
-		apples[i].score = 0;
+		apples[i].score = 10;
 
 		//sprite
 		apples[i].sprite.setTexture(&apple_texture[apples[i].num - 1]);
@@ -100,17 +106,49 @@ int main(void)
 			case Event::MouseButtonPressed:
 				if (event.mouseButton.button == Mouse::Left)
 				{
-
+					for (int i = 0; i < A_AMOUNT; i++)
+					{
+						//사과를 클릭했다면
+						if (apples[i].sprite.getGlobalBounds().contains(mouse_pos.x, mouse_pos.y))
+						{
+							apples[i].sprite.setFillColor(Color::Red);
+							apples[i].is_clicked = 1;
+							judge += apples[i].num;
+							++click_cnt;
+						}
+					}
 				}
 			default:
 				break;
 			}
 		}
 
+		/* apple update */
+		//여러 개의 사과가 클릭 된 상태 
+		if (judge == 10) 
+		{
+			for (int i = 0; i < A_AMOUNT; i++)
+			{
+				apples[i].is_cleared = 1;
+				score += 20;
+			}
+			judge = 0;
+			click_cnt = 0; 
+		}
+		else if (judge > 10) {
+			for (int i = 0; i < A_AMOUNT; i++)
+			{
+				apples[i].is_clicked = 0;
+				apples[i].sprite.setFillColor(Color::White);
+			}
+			judge = 0;
+			click_cnt = 0;
+		}
+		
+		
 		/* info update */
 		sprintf_s(info, "TIME : %2d\nSCORE : %d", TIME_LIMIT - spent_time / 1000, score);
 		text.setString(info);
-		printf("%s", info);
 
 		window.clear(Color::White);
 
@@ -118,7 +156,7 @@ int main(void)
 
 		for (int i = 0; i < A_AMOUNT; i++)
 		{
-			window.draw(apples[i].sprite);
+				window.draw(apples[i].sprite);
 		}
 		window.display();
 	}
